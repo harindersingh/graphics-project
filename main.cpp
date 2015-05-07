@@ -33,6 +33,49 @@ float bodyX1, bodyY1, bodyZ1, bodyX2, bodyY2, bodyZ2,
         rshoulderX, rshoulderY, rshoulderZ, rankleX, rankleY, rankleZ, rhandX, rhandY, rhandZ;
 float bodyRadius, llegRadius, rlegRadius, larmRadius, rarmRadius;
 int bodySubdivisions, llegSubdivisions, rlegSubdivisions, larmSubdivisions, rarmSubdivisions;
+float goggleX, goggleY, goggleZ1, goggleZ2, goggleRadius;
+
+void restorevalues(void){
+    headX = 0.0, headY = 0.6, headZ = -4;
+    headRadius = 0.6;
+    headSlices = 50, headStacks = 50;
+
+    bottomX = 0.0, bottomY = -0.6, bottomZ = -4;
+    bottomRadius = 0.6;
+    bottomSlices = 50, bottomStacks = 50;
+
+    bodyX1 = 0.0, bodyY1 = 0.6, bodyZ1 = -4;
+    bodyX2 = 0.0, bodyY2 = -0.6, bodyZ2 = -4;
+    bodyRadius = 0.6;
+    bodySubdivisions = 50;
+
+    llegX1 = -0.3, llegY1 = -1.05, llegZ1 = -4;
+    llegX2 = -0.3, llegY2 = -1.4, llegZ2 = -4;
+    llegRadius = 0.09;
+    llegSubdivisions = 50;
+
+    rlegX1 = 0.3, rlegY1 = -1.05, rlegZ1 = -4;
+    rlegX2 = 0.3, rlegY2 = -1.4, rlegZ2 = -4;
+    rlegRadius = 0.09;
+    rlegSubdivisions = 50;
+
+    lshoulderX = 0.65, lshoulderY = -0.1, lshoulderZ = -4;
+    lankleX = 0.9, lankleY = -0.35, lankleZ = -4;
+    lhandX = 0.7, lhandY = -0.6, lhandZ = -4;
+
+    rshoulderX = -lshoulderX, rshoulderY = lshoulderY, rshoulderZ = lshoulderZ;
+    rankleX = -lankleX, rankleY = lankleY, rankleZ = lankleZ;
+    rhandX = -lhandX, rhandY = lhandY, rhandZ = lhandZ;
+
+    larmRadius = 0.08;
+    rarmRadius = 0.08;
+    larmSubdivisions = 50;
+    rarmSubdivisions = 50;
+
+    goggleX = 0.0, goggleY = 0.5;
+    goggleZ1 = -3.9, goggleZ2 = -3.4;
+    goggleRadius = 0.25;
+}
 
 void initRendering() {
     glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -60,6 +103,7 @@ void initRendering() {
     glMaterialfv(GL_FRONT, GL_DIFFUSE,   mat_diffuse);
     glMaterialfv(GL_FRONT, GL_SPECULAR,  mat_specular);
     glMaterialfv(GL_FRONT, GL_SHININESS, high_shininess);
+    restorevalues();
 }
 
 void handleKeyPress(unsigned char key, int x, int y){
@@ -67,17 +111,17 @@ void handleKeyPress(unsigned char key, int x, int y){
     switch(key){
         case 27: // escape key
             exit(0);
-            case 'x': // Rotates screen on x axis
+        case 'x': // Rotates screen on x axis
         rotX -= 0.5f;
         break;
         case 'X': // Opposite way
         rotX += 0.5f;
         break;
         case 'y': // Rotates screen on y axis
-        rotY -= 0.5f;
+        rotY -= 3.5f;
         break;
         case 'Y': // Opposite way
-        rotY += 0.5f;
+        rotY += 3.5f;
         break;
         case 'z': // Rotates screen on z axis
         rotZ -= 0.5f;
@@ -95,6 +139,7 @@ void handleKeyPress(unsigned char key, int x, int y){
             rotLx = 0.0f;
             rotLy = 0.0f;
             rotLz = 0.0f;
+            restorevalues();
             glMatrixMode(GL_MODELVIEW);
             glLoadIdentity();
             gluLookAt(rotLx, rotLy, 0.5f + rotLz, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
@@ -195,39 +240,50 @@ void renderCylinder_convenient(float x1, float y1, float z1, float x2,float y2, 
     gluDeleteQuadric(quadric);
 }
 
-void restorevalues(void){
-    headX = 0.0, headY = 0.6, headZ = -3;
-    headRadius = 0.6;
-    headSlices = 50, headStacks = 50;
-    bottomX = 0.0, bottomY = -0.6, bottomZ = -3;
-    bottomRadius = 0.6;
-    bottomSlices = 50, bottomStacks = 50;
-    bodyX1 = 0.0, bodyY1 = 0.6, bodyZ1 = -3;
-    bodyX2 = 0.0, bodyY2 = -0.6, bodyZ2 = -3;
-    bodyRadius = 0.6;
-    bodySubdivisions = 50;
-    llegX1 = -0.3, llegY1 = -1.05, llegZ1 = -3;
-    llegX2 = -0.3, llegY2 = -1.4, llegZ2 = -3;
-    llegRadius = 0.09;
-    llegSubdivisions = 50;
-    rlegX1 = 0.3, rlegY1 = -1.05, rlegZ1 = -3;
-    rlegX2 = 0.3, rlegY2 = -1.4, rlegZ2 = -3;
-    rlegRadius = 0.09;
-    rlegSubdivisions = 50;
+void renderHollowCylinder(float x1, float y1, float z1, float x2,float y2, float z2, float radius, GLdouble _inner, GLUquadricObj *quadric)
+{
+    float vx = x2-x1;
+    float vy = y2-y1;
+    float vz = z2-z1;
 
-    lshoulderX = 0.65, lshoulderY = 0.3, lshoulderZ = -3;
-    lankleX = 0.85, lankleY = -0.1, lankleZ = -3;
-    lhandX = 0.7, lhandY = -0.5, lhandZ = -3;
+    //handle the degenerate case of z1 == z2 with an approximation
+    if(vz == 0)
+        vz = .0001;
 
-    rshoulderX = -lshoulderX, rshoulderY = lshoulderY, rshoulderZ = lshoulderZ;
-    rankleX = -lankleX, rankleY = lankleY, rankleZ = lankleZ;
-    rhandX = -lhandX, rhandY = lhandY, rhandZ = lhandZ;
+    float v = sqrt( vx*vx + vy*vy + vz*vz );
+    float ax = 57.2957795*acos( vz/v );
+    if ( vz < 0.0 )
+        ax = -ax;
+    float rx = -vy*vz;
+    float ry = vx*vz;
+    glPushMatrix();
 
-    larmRadius = 0.08;
-    rarmRadius = 0.08;
-    larmSubdivisions = 50;
-    rarmSubdivisions = 50;
+    //draw the cylinder body
+    glTranslatef( x1,y1,z1 );
+    glRotatef(ax, rx, ry, 0.0);
+    gluQuadricOrientation(quadric,GLU_OUTSIDE);
+    gluCylinder(quadric, radius, radius, v, 50, 50);
+
+    //draw the first cap
+    gluQuadricOrientation(quadric,GLU_INSIDE);
+    gluDisk( quadric, _inner, radius, 50, 1);
+    glTranslatef( 0,0,v );
+
+    //draw the second cap
+    gluQuadricOrientation(quadric,GLU_OUTSIDE);
+    gluDisk( quadric, _inner, radius, 50, 1);
+    glPopMatrix();
 }
+
+void renderHollowCylinder_convenient(float x1, float y1, float z1, float x2,float y2, float z2, float radius, GLdouble _inner)
+{
+    //the same quadric can be re-used for drawing many cylinders
+    GLUquadricObj *quadric=gluNewQuadric();
+    gluQuadricNormals(quadric, GLU_SMOOTH);
+    renderHollowCylinder(x1,y1,z1,x2,y2,z2,radius, _inner,quadric);
+    gluDeleteQuadric(quadric);
+}
+
 
 static void display(void)
 {
@@ -238,8 +294,6 @@ static void display(void)
     glRotatef(rotY,0.0,1.0,0.0); // Rotate on y
     glRotatef(rotZ,0.0,0.0,1.0); // Rotate on z
     glTranslatef(X, Y, Z); 	// Translates the screen left or right,
-
-    restorevalues();
 
     //six points up
     draw_sphere(headX, headY, headZ, headRadius, headSlices, headStacks);
@@ -269,6 +323,40 @@ static void display(void)
     draw_sphere(rankleX, rankleY, rankleZ, rarmRadius, 50, 50);
     renderCylinder_convenient(rankleX, rankleY, rankleZ, rhandX, rhandY, rhandZ, rarmRadius, rarmSubdivisions);
     draw_sphere(rhandX, rhandY, rhandZ, rarmRadius, 50, 50);
+
+    //goggle strap
+    glColor4f(0.0, 0.0, .0, 1.0);
+    renderHollowCylinder_convenient(goggleX, goggleY+0.05, headZ, goggleX, goggleY-0.05, headZ, headRadius+0.009, headRadius-0.5);
+
+    //goggles construction in progress
+    glColor4f(0.5, 0.5, 0.5, 0.0);
+    renderHollowCylinder_convenient(goggleX, goggleY, goggleZ1, goggleX, goggleY,
+                              goggleZ2, goggleRadius, goggleRadius-0.05);
+    //eye
+    glColor4f(1.0, 1.0, 1.0, 0.1);
+    renderCylinder_convenient(goggleX, goggleY, goggleZ1+0.2, goggleX, goggleY,
+                              goggleZ2, goggleRadius-0.05, 50);
+
+    //pupil
+    glColor4f(0.0, 0.0, 0.0, 0.1);
+    draw_sphere(goggleX, goggleY, goggleZ2, 0.1, 50, 50);
+
+    //clothing
+    //shirt
+    glColor4f(1.0, 1.0, 1.0, 0.5);
+    renderCylinder_convenient(bodyX1, bodyY1-0.55, bodyZ1, bodyX2, bodyY2, bodyZ2, bodyRadius+0.01, bodySubdivisions);
+
+    //pants
+    glColor4f(0.0, 0.0, 0.0, 0.0);
+    draw_sphere(bottomX, bottomY, bottomZ, bottomRadius+0.01, bottomSlices, bottomStacks);
+
+    //belt
+    glColor4f(0.458, 0.27, 0.2235, 0.0);
+    renderCylinder_convenient(bodyX2, bodyY2+0.06, bodyZ2, bodyX2, bodyY2-0.05, bodyZ2, bodyRadius+0.02, 50);
+
+    //smile
+    renderHollowCylinder_convenient(headX, headY-0.25, headZ+.50, headX, headY-0.4, headZ+0.35, 0.2, 0.25);
+
 
     glPopMatrix();
 
