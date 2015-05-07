@@ -23,6 +23,16 @@ const GLfloat mat_ambient[]    = { 0.7f, 0.7f, 0.7f, 1.0f };
 const GLfloat mat_diffuse[]    = { 0.8f, 0.8f, 0.8f, 1.0f };
 const GLfloat mat_specular[]   = { 1.0f, 1.0f, 1.0f, 1.0f };
 const GLfloat high_shininess[] = { 70.0f };
+GLfloat headX, headY, headZ, bottomX, bottomY, bottomZ;
+GLdouble headRadius, bottomRadius;
+GLint headSlices, headStacks, bottomSlices, bottomStacks;
+float bodyX1, bodyY1, bodyZ1, bodyX2, bodyY2, bodyZ2,
+        llegX1, llegY1, llegZ1, llegX2, llegY2, llegZ2,
+        rlegX1, rlegY1, rlegZ1, rlegX2, rlegY2, rlegZ2,
+        lshoulderX, lshoulderY, lshoulderZ, lankleX, lankleY, lankleZ, lhandX, lhandY, lhandZ,
+        rshoulderX, rshoulderY, rshoulderZ, rankleX, rankleY, rankleZ, rhandX, rhandY, rhandZ;
+float bodyRadius, llegRadius, rlegRadius, larmRadius, rarmRadius;
+int bodySubdivisions, llegSubdivisions, rlegSubdivisions, larmSubdivisions, rarmSubdivisions;
 
 void initRendering() {
     glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -121,7 +131,6 @@ void specialKey(int key, int x, int y) {
     glutPostRedisplay(); // Redraw the scene
 }
 
-
 void handleresize(int width, int height){
     const float ar = (float) width / (float) height;
 
@@ -176,6 +185,7 @@ void renderCylinder(float x1, float y1, float z1, float x2,float y2, float z2, f
     gluDisk( quadric, 0.0, radius, subdivisions, 1);
     glPopMatrix();
 }
+
 void renderCylinder_convenient(float x1, float y1, float z1, float x2,float y2, float z2, float radius,int subdivisions)
 {
     //the same quadric can be re-used for drawing many cylinders
@@ -183,6 +193,40 @@ void renderCylinder_convenient(float x1, float y1, float z1, float x2,float y2, 
     gluQuadricNormals(quadric, GLU_SMOOTH);
     renderCylinder(x1,y1,z1,x2,y2,z2,radius,subdivisions,quadric);
     gluDeleteQuadric(quadric);
+}
+
+void restorevalues(void){
+    headX = 0.0, headY = 0.6, headZ = -3;
+    headRadius = 0.6;
+    headSlices = 50, headStacks = 50;
+    bottomX = 0.0, bottomY = -0.6, bottomZ = -3;
+    bottomRadius = 0.6;
+    bottomSlices = 50, bottomStacks = 50;
+    bodyX1 = 0.0, bodyY1 = 0.6, bodyZ1 = -3;
+    bodyX2 = 0.0, bodyY2 = -0.6, bodyZ2 = -3;
+    bodyRadius = 0.6;
+    bodySubdivisions = 50;
+    llegX1 = -0.3, llegY1 = -1.05, llegZ1 = -3;
+    llegX2 = -0.3, llegY2 = -1.4, llegZ2 = -3;
+    llegRadius = 0.09;
+    llegSubdivisions = 50;
+    rlegX1 = 0.3, rlegY1 = -1.05, rlegZ1 = -3;
+    rlegX2 = 0.3, rlegY2 = -1.4, rlegZ2 = -3;
+    rlegRadius = 0.09;
+    rlegSubdivisions = 50;
+
+    lshoulderX = 0.65, lshoulderY = 0.3, lshoulderZ = -3;
+    lankleX = 0.85, lankleY = -0.1, lankleZ = -3;
+    lhandX = 0.7, lhandY = -0.5, lhandZ = -3;
+
+    rshoulderX = -lshoulderX, rshoulderY = lshoulderY, rshoulderZ = lshoulderZ;
+    rankleX = -lankleX, rankleY = lankleY, rankleZ = lankleZ;
+    rhandX = -lhandX, rhandY = lhandY, rhandZ = lhandZ;
+
+    larmRadius = 0.08;
+    rarmRadius = 0.08;
+    larmSubdivisions = 50;
+    rarmSubdivisions = 50;
 }
 
 static void display(void)
@@ -194,24 +238,38 @@ static void display(void)
     glRotatef(rotY,0.0,1.0,0.0); // Rotate on y
     glRotatef(rotZ,0.0,0.0,1.0); // Rotate on z
     glTranslatef(X, Y, Z); 	// Translates the screen left or right,
-    //six points up
-    draw_sphere(0.0, 0.6, -3, 0.6, 50, 50);
-    //six points down
-    draw_sphere(0.0, -0.6, -3, 0.6, 50, 50);
 
-    renderCylinder_convenient(0.0, 0.6, -3, 0.0, -0.6, -3, 0.6, 50);
+    restorevalues();
+
+    //six points up
+    draw_sphere(headX, headY, headZ, headRadius, headSlices, headStacks);
+    //six points down
+    draw_sphere(bottomX, bottomY, bottomZ, bottomRadius, bottomSlices, bottomStacks);
+
+    renderCylinder_convenient(bodyX1, bodyY1, bodyZ1, bodyX2, bodyY2, bodyZ2, bodyRadius, bodySubdivisions);
 
     //body is drawn ... moving on to the legs
     //minion's left leg
-    renderCylinder_convenient(-0.3, -1.05, -3, -0.3, -1.4, -3, 0.09, 50);
-    draw_sphere(-0.3, -1.4, -3, 0.09, 50, 50);
+    renderCylinder_convenient(llegX1, llegY1, llegZ1, llegX2, llegY2, llegZ2, llegRadius, llegSubdivisions);
+    draw_sphere(llegX2, llegY2, llegZ2, llegRadius, llegSubdivisions, 50);
     //minion's right leg
-    renderCylinder_convenient(0.3, -1.05, -3, 0.3, -1.4, -3, 0.09, 50);
-    draw_sphere(0.3, -1.4, -3, 0.09, 50, 50);
+    renderCylinder_convenient(rlegX1, rlegY1, rlegZ1, rlegX2, rlegY2, rlegZ2, rlegRadius, rlegSubdivisions);
+    draw_sphere(rlegX2, rlegY2, rlegZ2, rlegRadius, rlegSubdivisions, 50);
 
     //minion's left arm
+    draw_sphere(lshoulderX, lshoulderY, lshoulderZ, larmRadius, 50, 50);
+    renderCylinder_convenient(lshoulderX, lshoulderY, lshoulderZ, lankleX, lankleY, lankleZ, larmRadius, larmSubdivisions);
+    draw_sphere(lankleX, lankleY, lankleZ, larmRadius, 50, 50);
+    renderCylinder_convenient(lankleX, lankleY, lankleZ, lhandX, lhandY, lhandZ, larmRadius, larmSubdivisions);
+    draw_sphere(lhandX, lhandY, lhandZ, larmRadius, 50, 50);
 
     //minion's right arm
+    draw_sphere(rshoulderX, rshoulderY, rshoulderZ, rarmRadius, 50, 50);
+    renderCylinder_convenient(rshoulderX, rshoulderY, rshoulderZ, rankleX, rankleY, rankleZ, rarmRadius, rarmSubdivisions);
+    draw_sphere(rankleX, rankleY, rankleZ, rarmRadius, 50, 50);
+    renderCylinder_convenient(rankleX, rankleY, rankleZ, rhandX, rhandY, rhandZ, rarmRadius, rarmSubdivisions);
+    draw_sphere(rhandX, rhandY, rhandZ, rarmRadius, 50, 50);
+
     glPopMatrix();
 
     glutSwapBuffers();
