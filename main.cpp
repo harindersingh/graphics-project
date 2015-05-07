@@ -17,12 +17,12 @@ GLfloat rotLz = 0.0f; // Translate screen by using the glulookAt function (zoom 
 const GLfloat light_ambient[]  = { 0.0f, 0.0f, 0.0f, 1.0f };
 const GLfloat light_diffuse[]  = { 1.0f, 1.0f, 1.0f, 1.0f };
 const GLfloat light_specular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-const GLfloat light_position[] = { 2.0f, 5.0f, 5.0f, 0.0f };
+const GLfloat light_position[] = { 2.0f, 2.0f, 5.0f, 0.0f };
 
 const GLfloat mat_ambient[]    = { 0.7f, 0.7f, 0.7f, 1.0f };
 const GLfloat mat_diffuse[]    = { 0.8f, 0.8f, 0.8f, 1.0f };
 const GLfloat mat_specular[]   = { 1.0f, 1.0f, 1.0f, 1.0f };
-const GLfloat high_shininess[] = { 100.0f };
+const GLfloat high_shininess[] = { 70.0f };
 
 void initRendering() {
     glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -189,17 +189,29 @@ static void display(void)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glPushMatrix();
-    glColor3d(1,0,0);
+    glColor4f(0.9, 0.9, 0.0, 0.1);
     glRotatef(rotX,1.0,0.0,0.0); // Rotate on x
     glRotatef(rotY,0.0,1.0,0.0); // Rotate on y
     glRotatef(rotZ,0.0,0.0,1.0); // Rotate on z
     glTranslatef(X, Y, Z); 	// Translates the screen left or right,
     //six points up
-    draw_sphere(0.0, 0.6, -6, 0.6, 50, 50);
+    draw_sphere(0.0, 0.6, -3, 0.6, 50, 50);
     //six points down
-    draw_sphere(0.0, -0.6, -6, 0.6, 50, 50);
+    draw_sphere(0.0, -0.6, -3, 0.6, 50, 50);
 
-    renderCylinder_convenient(0.0, 0.6, -6, 0.0, -0.6, -6, 0.6, 50);
+    renderCylinder_convenient(0.0, 0.6, -3, 0.0, -0.6, -3, 0.6, 50);
+
+    //body is drawn ... moving on to the legs
+    //minion's left leg
+    renderCylinder_convenient(-0.3, -1.05, -3, -0.3, -1.4, -3, 0.09, 50);
+    draw_sphere(-0.3, -1.4, -3, 0.09, 50, 50);
+    //minion's right leg
+    renderCylinder_convenient(0.3, -1.05, -3, 0.3, -1.4, -3, 0.09, 50);
+    draw_sphere(0.3, -1.4, -3, 0.09, 50, 50);
+
+    //minion's left arm
+
+    //minion's right arm
     glPopMatrix();
 
     glutSwapBuffers();
