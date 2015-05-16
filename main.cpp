@@ -34,6 +34,8 @@ float bodyX1, bodyY1, bodyZ1, bodyX2, bodyY2, bodyZ2,
 float bodyRadius, llegRadius, rlegRadius, larmRadius, rarmRadius;
 int bodySubdivisions, llegSubdivisions, rlegSubdivisions, larmSubdivisions, rarmSubdivisions;
 float goggleX, goggleY, goggleZ1, goggleZ2, goggleRadius;
+float status = 0;
+int rightarm = 0, leftarm = 0;
 
 void restorevalues(void){
     headX = 0.0, headY = 0.6, headZ = -4;
@@ -129,6 +131,18 @@ void handleKeyPress(unsigned char key, int x, int y){
         case 'Z': // Opposite way
         rotZ += 0.5f;
         break;
+        case 'a':
+        case 'A':
+            status = -1.0;
+            break;
+        case 'd':
+        case 'D':
+            status = 1.0;
+            break;
+        case 's':
+        case 'S':
+            status = 0.0;
+            break;
         case 'o': // Default, resets the translations vies from starting view
         case 'O':
             X = Y = 0.0f;
@@ -174,6 +188,19 @@ void specialKey(int key, int x, int y) {
         break;
     }
     glutPostRedisplay(); // Redraw the scene
+}
+
+void onMouse(int button, int state, int x, int y){
+    if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+        leftarm = 1;
+    else
+        leftarm = 0;
+    if(button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN)
+        rightarm = 1;
+    else
+        rightarm = 0;
+
+    glutPostRedisplay();
 }
 
 void handleresize(int width, int height){
@@ -296,67 +323,80 @@ static void display(void)
     glTranslatef(X, Y, Z); 	// Translates the screen left or right,
 
     //six points up
-    draw_sphere(headX, headY, headZ, headRadius, headSlices, headStacks);
+    draw_sphere(headX+status, headY, headZ, headRadius, headSlices, headStacks);
     //six points down
-    draw_sphere(bottomX, bottomY, bottomZ, bottomRadius, bottomSlices, bottomStacks);
+    draw_sphere(bottomX+status, bottomY, bottomZ, bottomRadius, bottomSlices, bottomStacks);
 
-    renderCylinder_convenient(bodyX1, bodyY1, bodyZ1, bodyX2, bodyY2, bodyZ2, bodyRadius, bodySubdivisions);
+    renderCylinder_convenient(bodyX1+status, bodyY1, bodyZ1, bodyX2+status, bodyY2, bodyZ2, bodyRadius, bodySubdivisions);
 
     //body is drawn ... moving on to the legs
     //minion's left leg
-    renderCylinder_convenient(llegX1, llegY1, llegZ1, llegX2, llegY2, llegZ2, llegRadius, llegSubdivisions);
-    draw_sphere(llegX2, llegY2, llegZ2, llegRadius, llegSubdivisions, 50);
+    renderCylinder_convenient(llegX1+status, llegY1, llegZ1, llegX2+status, llegY2, llegZ2, llegRadius, llegSubdivisions);
+    draw_sphere(llegX2+status, llegY2, llegZ2, llegRadius, llegSubdivisions, 50);
     //minion's right leg
-    renderCylinder_convenient(rlegX1, rlegY1, rlegZ1, rlegX2, rlegY2, rlegZ2, rlegRadius, rlegSubdivisions);
-    draw_sphere(rlegX2, rlegY2, rlegZ2, rlegRadius, rlegSubdivisions, 50);
+    renderCylinder_convenient(rlegX1+status, rlegY1, rlegZ1, rlegX2+status, rlegY2, rlegZ2, rlegRadius, rlegSubdivisions);
+    draw_sphere(rlegX2+status, rlegY2, rlegZ2, rlegRadius, rlegSubdivisions, 50);
 
     //minion's left arm
-    draw_sphere(lshoulderX, lshoulderY, lshoulderZ, larmRadius, 50, 50);
-    renderCylinder_convenient(lshoulderX, lshoulderY, lshoulderZ, lankleX, lankleY, lankleZ, larmRadius, larmSubdivisions);
-    draw_sphere(lankleX, lankleY, lankleZ, larmRadius, 50, 50);
-    renderCylinder_convenient(lankleX, lankleY, lankleZ, lhandX, lhandY, lhandZ, larmRadius, larmSubdivisions);
-    draw_sphere(lhandX, lhandY, lhandZ, larmRadius, 50, 50);
+    if(leftarm){
+        draw_sphere(lshoulderX+status, lshoulderY, lshoulderZ, larmRadius, 50, 50);
+        renderCylinder_convenient(lshoulderX+status, lshoulderY, lshoulderZ, lankleX+status, lankleY+1.0, lankleZ, larmRadius, larmSubdivisions);
+        draw_sphere(lankleX+status, lankleY+1.0, lankleZ, larmRadius, 50, 50);
+    }
+    else{
+        draw_sphere(lshoulderX+status, lshoulderY, lshoulderZ, larmRadius, 50, 50);
+        renderCylinder_convenient(lshoulderX+status, lshoulderY, lshoulderZ, lankleX+status, lankleY, lankleZ, larmRadius, larmSubdivisions);
+        draw_sphere(lankleX+status, lankleY, lankleZ, larmRadius, 50, 50);
+        renderCylinder_convenient(lankleX+status, lankleY, lankleZ, lhandX+status, lhandY, lhandZ, larmRadius, larmSubdivisions);
+        draw_sphere(lhandX+status, lhandY, lhandZ, larmRadius, 50, 50);
+    }
 
     //minion's right arm
-    draw_sphere(rshoulderX, rshoulderY, rshoulderZ, rarmRadius, 50, 50);
-    renderCylinder_convenient(rshoulderX, rshoulderY, rshoulderZ, rankleX, rankleY, rankleZ, rarmRadius, rarmSubdivisions);
-    draw_sphere(rankleX, rankleY, rankleZ, rarmRadius, 50, 50);
-    renderCylinder_convenient(rankleX, rankleY, rankleZ, rhandX, rhandY, rhandZ, rarmRadius, rarmSubdivisions);
-    draw_sphere(rhandX, rhandY, rhandZ, rarmRadius, 50, 50);
+    if(rightarm){
+        draw_sphere(rshoulderX+status, rshoulderY, rshoulderZ, rarmRadius, 50, 50);
+        renderCylinder_convenient(rshoulderX+status, rshoulderY, rshoulderZ, rankleX+status, rankleY+1.0, rankleZ, rarmRadius, rarmSubdivisions);
+        draw_sphere(rankleX+status, rankleY+1.0, rankleZ, rarmRadius, 50, 50);
+    }
+    else{
+        draw_sphere(rshoulderX+status, rshoulderY, rshoulderZ, rarmRadius, 50, 50);
+        renderCylinder_convenient(rshoulderX+status, rshoulderY, rshoulderZ, rankleX+status, rankleY, rankleZ, rarmRadius, rarmSubdivisions);
+        draw_sphere(rankleX+status, rankleY, rankleZ, rarmRadius, 50, 50);
+        renderCylinder_convenient(rankleX+status, rankleY, rankleZ, rhandX+status, rhandY, rhandZ, rarmRadius, rarmSubdivisions);
+        draw_sphere(rhandX+status, rhandY, rhandZ, rarmRadius, 50, 50);
+    }
 
     //goggle strap
     glColor4f(0.0, 0.0, .0, 1.0);
-    renderHollowCylinder_convenient(goggleX, goggleY+0.05, headZ, goggleX, goggleY-0.05, headZ, headRadius+0.009, headRadius-0.5);
+    renderHollowCylinder_convenient(goggleX+status, goggleY+0.05, headZ, goggleX+status, goggleY-0.05, headZ, headRadius+0.009, headRadius-0.5);
 
     //goggles construction in progress
     glColor4f(0.5, 0.5, 0.5, 0.0);
-    renderHollowCylinder_convenient(goggleX, goggleY, goggleZ1, goggleX, goggleY,
+    renderHollowCylinder_convenient(goggleX+status, goggleY, goggleZ1, goggleX+status, goggleY,
                               goggleZ2, goggleRadius, goggleRadius-0.05);
     //eye
     glColor4f(1.0, 1.0, 1.0, 0.1);
-    renderCylinder_convenient(goggleX, goggleY, goggleZ1+0.2, goggleX, goggleY,
+    renderCylinder_convenient(goggleX+status, goggleY, goggleZ1+0.2, goggleX+status, goggleY,
                               goggleZ2, goggleRadius-0.05, 50);
 
     //pupil
     glColor4f(0.0, 0.0, 0.0, 0.1);
-    draw_sphere(goggleX, goggleY, goggleZ2, 0.1, 50, 50);
+    draw_sphere(goggleX+status, goggleY, goggleZ2, 0.1, 50, 50);
 
     //clothing
     //shirt
     glColor4f(1.0, 1.0, 1.0, 0.5);
-    renderCylinder_convenient(bodyX1, bodyY1-0.55, bodyZ1, bodyX2, bodyY2, bodyZ2, bodyRadius+0.01, bodySubdivisions);
+    renderCylinder_convenient(bodyX1+status, bodyY1-0.55, bodyZ1, bodyX2+status, bodyY2, bodyZ2, bodyRadius+0.01, bodySubdivisions);
 
     //pants
     glColor4f(0.0, 0.0, 0.0, 0.0);
-    draw_sphere(bottomX, bottomY, bottomZ, bottomRadius+0.01, bottomSlices, bottomStacks);
+    draw_sphere(bottomX+status, bottomY, bottomZ, bottomRadius+0.01, bottomSlices, bottomStacks);
 
     //belt
     glColor4f(0.458, 0.27, 0.2235, 0.0);
-    renderCylinder_convenient(bodyX2, bodyY2+0.06, bodyZ2, bodyX2, bodyY2-0.05, bodyZ2, bodyRadius+0.02, 50);
+    renderCylinder_convenient(bodyX2+status, bodyY2+0.06, bodyZ2, bodyX2+status, bodyY2-0.05, bodyZ2, bodyRadius+0.02, 50);
 
     //smile
-    renderHollowCylinder_convenient(headX, headY-0.25, headZ+.50, headX, headY-0.4, headZ+0.35, 0.2, 0.25);
-
+    renderHollowCylinder_convenient(headX+status, headY-0.25, headZ+.50, headX+status, headY-0.4, headZ+0.35, 0.2, 0.25);
 
     glPopMatrix();
 
@@ -377,6 +417,7 @@ int main(int argc, char **argv){
     glutCreateWindow("GRAPHICS PROJECT");
     initRendering();
     glutReshapeFunc(handleresize);
+    glutMouseFunc(onMouse);
     glutKeyboardFunc(handleKeyPress);
     glutSpecialFunc(specialKey); // set window's to specialKey callback
     glutDisplayFunc(display);
