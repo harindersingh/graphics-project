@@ -4,6 +4,7 @@
 #include <GL/glut.h>
 #include <time.h>
 #include <cmath>
+#include <unistd.h>
 using namespace std;
 GLfloat X = 0.0f; // Translate screen to x direction (left or right)
 GLfloat Y = 0.0f; // Translate screen to y direction (up or down)
@@ -36,6 +37,20 @@ int bodySubdivisions, llegSubdivisions, rlegSubdivisions, larmSubdivisions, rarm
 float goggleX, goggleY, goggleZ1, goggleZ2, goggleRadius;
 float status = 0;
 int rightarm = 0, leftarm = 0;
+
+float random_array[] = {0, -1, 1, 0, 1, 0, 1, -1, 1, 0, 1, -1, -1, 0, 1, 0, -1, 0, 0, 1, 0, -1, 0, 1}; //24 values
+int random_x[] = {0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1}; //24 values
+int temprightarm, templeftarm, indexer = 0, indexx = 23, choices;
+float tempstatus;
+
+void sleep( time_t delay )
+{
+    time_t timer0, timer1;
+    time( &timer0 );
+    do {
+    time( &timer1 );
+    } while (( timer1 - timer0 ) < delay );
+}
 
 void restorevalues(void){
     headX = 0.0, headY = 0.6, headZ = -4;
@@ -312,7 +327,7 @@ void renderHollowCylinder_convenient(float x1, float y1, float z1, float x2,floa
 }
 
 
-static void display(void)
+void display(void)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glPushMatrix();
@@ -403,12 +418,32 @@ static void display(void)
     glutSwapBuffers();
 }
 
-static void idle(void)
+void idle()
 {
+    indexer %=  24;
+    status = random_array[indexer];
+    indexx += 2;
+    indexx %=  24;
+    rightarm = random_x[indexx];
+    indexer += 7 + indexx;
+    indexer %=  24;
+    leftarm = random_x[indexer];
+    //usleep(5000);
+    //cout << indexer <<"\t";
+    sleep(1);
+    indexer++;
+
+    glLoadIdentity();
+    if(random_x[indexx])
+        gluLookAt (rotLx, rotLy+random_x[indexx]/2, 0.5f + rotLz, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+
     glutPostRedisplay();
 }
 
 int main(int argc, char **argv){
+    printf("Do you want the Minion to make random moves or custom moves\n a/A - Moves Left\ts/S - Moves to Center\td/D - Moves Right\n");
+    printf("\n\tRight click and left click alternates arm positions\n\t\t 1 for random moves 2 for custom moves\n");
+    cin >> choices;
     glutInit(&argc, argv);
     glutInitWindowSize(720,540);
     glutInitWindowPosition(10,10);
@@ -417,11 +452,13 @@ int main(int argc, char **argv){
     glutCreateWindow("GRAPHICS PROJECT");
     initRendering();
     glutReshapeFunc(handleresize);
+    if(choices == 1)
+        glutIdleFunc(idle);
+
     glutMouseFunc(onMouse);
     glutKeyboardFunc(handleKeyPress);
     glutSpecialFunc(specialKey); // set window's to specialKey callback
     glutDisplayFunc(display);
-    glutIdleFunc(idle);
 
     glutMainLoop();
     return 0;
